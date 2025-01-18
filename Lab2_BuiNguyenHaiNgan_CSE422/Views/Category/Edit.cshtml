@@ -1,0 +1,39 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    ViewData["Title"] = "Edit Category";
+}
+
+@model Category;
+
+<div class="page-container">
+    <div class="main-title">
+        <h3>Edit Category</h3>
+    </div>
+    <div class="main-container">
+        <form>
+            <label for="oldTitle" class="custom-label">Current Title</label>
+            <input name="oldTitle" class="custom-input" value="@Model.Title" readonly/>
+        </form>
+        <form id="editForm" asp-controller="Category" asp-action="Edit" asp-route-id="@Model.Id" method="post">
+            <label for="title" class="custom-label">New Title</label>
+            <input id="title" name="title" class="custom-input" type="text" required />
+        </form>
+        <a href="#" class="custom-button" id="submitButton">Change</a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('submitButton').addEventListener('click', function (event) {
+        event.preventDefault();
+
+        const form = document.getElementById('editForm');
+        const titleInput = document.getElementById('title').value.trim();
+        if (!titleInput) {
+            alert("Title is required!");
+            return;
+        }
+        form.submit();
+    });
+</script>

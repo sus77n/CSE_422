@@ -1,0 +1,62 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    ViewData["Title"] = "Edit Device";
+}
+
+@model Device
+
+<div class="page-container">
+    <div class="main-title">
+        <h3>Edit Device</h3>
+    </div>
+    <div class="main-container">
+        <form id="createForm" asp-controller="Device" asp-action="Edit" method="post">
+            <div class="row">
+                <div class="col-2">
+                    <label for="code" class="custom-label">Code</label>
+                    <input id="code" name="code" class="custom-input" type="text" value="@Model.Code" />
+                </div>
+                <div class="col-10">
+                    <label for="categoryId" class="custom-label">Category</label>
+                    <select id="categoryId" name="categoryId" class="custom-input" asp-items="ViewBag.Categories"></select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <label for="name" class="custom-label">Name</label>
+                    <input id="name" name="name" class="custom-input" type="text" value="@Model.Name" />
+                </div>
+                <div class="col-5">
+                    <label for="status" class="custom-label">Status</label>
+                    <select id="status" name="status" class="custom-input">
+                        <option value="In use">In use</option>
+                        <option value="Broken">Broken</option>
+                        <option value="Under maintenance">Under maintenance</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="custom-button">Update</button>
+        </form>
+    </div>
+</div>
+<script>
+    document.querySelector('.custom-button').addEventListener('click', function (event) {
+        event.preventDefault();
+
+        const form = document.getElementById('createForm');
+
+        const code = document.getElementById('code').value.trim();
+        const name = document.getElementById('name').value.trim();
+        const categoryId = document.getElementById('categoryId').value;
+        const status = document.getElementById('status').value;
+
+        if (!code || !name || !categoryId || !status) {
+            alert("All fields are required!");
+            return;
+        }
+        form.submit();
+    });
+</script>
+

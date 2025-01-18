@@ -1,0 +1,33 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    ViewData["Title"] = "Create Category";
+}
+<div class="page-container">
+    <div class="main-title">
+        <h3>Create New Category</h3>
+    </div>
+    <div class="main-container">
+        <form id="createForm" asp-controller="Category" asp-action="Create" method="post">
+            <label for="title" class="custom-label">Title</label>
+            <input id="title" name="title" class="custom-input" type="text" required />
+        </form>
+        <a href="#" class="custom-button" id="submitButton">Create</a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('submitButton').addEventListener('click', function (event) {
+        event.preventDefault(); 
+
+        const form = document.getElementById('createForm');
+        const titleInput = document.getElementById('title').value.trim();
+        if (!titleInput) {
+            alert("Title is required!");
+            return;
+        }
+        form.submit(); 
+    });
+</script>
+

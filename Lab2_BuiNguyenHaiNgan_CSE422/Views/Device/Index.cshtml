@@ -1,0 +1,185 @@
+﻿@model List<Device>
+
+<div class="page-container">
+    <div class="main-title">
+        <h3>DEVICE LIST</h3>
+        <a id="add-category-btn" class="action-button" asp-controller="Device" asp-action="Create"><i class="bi bi-plus"></i></a>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="row align-content-lg-between" style="margin-right: 20px;">
+        <div class="col-4">
+            <input type="text" id="searchInput" placeholder="Search by name or code" class="custom-input" />
+        </div>
+        <div class="col-4">
+            <select id="statusFilter" class="custom-input">
+                <option value="">Filter by status</option>
+                <option value="In use">In use</option>
+                <option value="Broken">Broken</option>
+                <option value="Under maintenance">Under maintenance</option>
+            </select>
+        </div>
+        <div class="col-4">
+            <select id="categoryId" name="categoryId" class="custom-input" asp-items="ViewBag.Categories">
+                <option value="">All Categories</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="main-container-table">
+        <table class="category-table">
+            <colgroup>
+                <col width="10%" />
+                <col width="20%" />
+                <col width="20%" />
+                <col width="10%" />
+                <col width="20%" />
+                <col width="20%" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Date of entry</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="category-table-body">
+                @foreach (var d in Model)
+                {
+                    <tr data-id="@d.Id" data-status="@d.Status" data-category="@d.Category.Id">
+                        <td>@d.Code</td>
+                        <td>@d.Name</td>
+                        <td>@(d.Category?.Title ?? "no category")</td>
+                        <td>@d.Status</td>
+                        <td>@(d.DateOfEntry != default(DateTime) ? d.DateOfEntry.ToString("yyyy-MM-dd HH:mm:ss") : "No Date")</td>
+                        <td>
+                            <a asp-controller="Device" asp-action="Edit" asp-route-id="@d.Id">
+                                <i class="bi bi-pen"></i>
+                            </a>
+                            <a class="deleteButton" href="#" data-id="@d.Id"><i class="bi bi-trash"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal for confirmation -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this item?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button id="confirmDelete" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const confirmDeleteButton = document.getElementById('confirmDelete');
+    let deleteUrl = '';
+
+    document.querySelectorAll('.deleteButton').forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            const id = this.getAttribute('data-id');
+            console.log('Delete button clicked, id:', id);  
+            deleteUrl = `/Device/Delete/${id}`; 
+            deleteModal.show();
+        });
+    });
+
+    confirmDeleteButton.addEventListener('click', function () {
+        console.log('Confirm delete button clicked');  
+        if (!deleteUrl) {
+            console.error('Delete URL is not set.');
+            alert('Error: Invalid delete URL.');
+            return;
+        }
+
+        fetch(deleteUrl, {
+            method: 'POST', 
+        })
+        .then(response => {
+            console.log('Delete response:', response); 
+            if (response.ok) {
+                const id = deleteUrl.split('/').pop();
+                const row = document.querySelector(`tr[data-id="${id}"]`);
+                if (row) {
+                    row.remove();
+                }
+                deleteModal.hide();
+            } else if (response.status === 404) {
+                alert('Item not found.');
+            } else {
+                response.text().then(text => {
+                    console.error('Server Error:', text);
+                    alert('Failed to delete the item.');
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the item.');
+        });
+    });
+
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const categoryFilter = document.getElementById('categoryId');
+    
+     function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedStatus = statusFilter.value.toLowerCase();
+        const selectedCategoryId = categoryFilter.value; // Category filter is based on the ID
+
+        console.log('Filtering with:');
+        console.log('Search Term:', searchTerm);
+        console.log('Status Filter:', selectedStatus);
+        console.log('Category Filter (ID):', selectedCategoryId);
+
+        document.querySelectorAll('#category-table-body tr').forEach(row => {
+            const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+            const code = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+            const status = row.getAttribute('data-status').toLowerCase();
+            const categoryId = row.getAttribute('data-category'); // Assuming data-category holds the category ID
+
+            console.log('Row category ID:', categoryId);
+
+            const matchesSearch = name.includes(searchTerm) || code.includes(searchTerm);
+            const matchesStatus = selectedStatus ? status.includes(selectedStatus) : true;
+            
+            // Update category comparison: If no category, consider it a match for "All Categories"
+            const matchesCategory = selectedCategoryId ? categoryId == selectedCategoryId : (categoryId === "no category" || categoryId); 
+
+            console.log('Row matches:', matchesSearch, matchesStatus, matchesCategory);
+
+            if (matchesSearch && matchesStatus && matchesCategory) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    statusFilter.addEventListener('change', filterTable);
+    categoryFilter.addEventListener('change', filterTable);
+});
+
+</script>
+

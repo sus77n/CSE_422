@@ -1,0 +1,60 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    ViewData["Title"] = "Create New User";
+}
+<div class="page-container">
+    <div class="main-title">
+        <h3>Create New User</h3>
+    </div>
+    <div class="main-container">
+        <form id="createForm" asp-controller="User" asp-action="Create" method="post">
+            <div class="row">
+                <div class="col-6">
+                    <label for="fullName" class="custom-label">Fullname</label>
+                    <input id="fullName" name="fullName" class="custom-input" type="text" required />
+                </div>
+                <div class="col-6">
+                    <label for="email" class="custom-label">Email</label>
+                    <input id="email" name="email" class="custom-input" type="email" required />
+                </div>
+                <div class="col-6">
+                    <label for="phoneNumber" class="custom-label">Phone Number</label>
+                    <input id="phoneNumber" name="phoneNumber" class="custom-input" type="tel" required />
+                </div>
+                <div class="col-6">
+                    <label for="role" class="custom-label">Role</label>
+                    <select id="role" name="role" class="custom-input">
+                        <option value="User">User</option>
+                        <option value="Employee">Employee</option>
+                    </select>
+                </div>
+            </div> 
+        </form>
+        <a href="#" class="custom-button" id="submitButton">Create</a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('submitButton').addEventListener('click', function (event) {
+        event.preventDefault(); // Prevent default link behavior
+
+        const form = document.getElementById('createForm');
+        
+        // Perform validation
+        const fullNameInput = document.getElementById('fullName').value.trim();
+        const emailInput = document.getElementById('email').value.trim();
+        const phoneNumberInput = document.getElementById('phoneNumber').value.trim();
+
+        if (!fullNameInput || !emailInput || !phoneNumberInput) {
+            alert("All fields are required!");
+            return;
+        }
+
+        form.submit(); // Submit the form if validation passes
+    });
+</script>
+
+
+
